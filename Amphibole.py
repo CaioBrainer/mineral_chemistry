@@ -25,7 +25,6 @@ def normalization(epma_table):
         df_anion['Si_anion'] = (epma_table['SiO2'] * 2) / 60.0843
         df_anion['Ti_anion'] = (epma_table['TiO2'] * 2) / 79.8788
         df_anion['Al_anion'] = (epma_table['Al2O3'] * 3) / 101.9602
-        df_anion['Cr_anion'] = (epma_table['Cr2O3'] * 3) / 151.9902
         df_anion['Fe3_anion'] = (epma_table['Fe2O3'] * 3) / 60.0843
         df_anion['Fe2_anion'] = epma_table['FeO'] / 71.8464
         df_anion['Mn_anion'] = epma_table['MnO'] / 70.9374
@@ -46,7 +45,6 @@ def normalization(epma_table):
         df_cation['Si_cation'] = epma_table['SiO2'] / 60.0843
         df_cation['Ti_cation'] = epma_table['TiO2'] / 79.8788
         df_cation['Al_cation'] = (epma_table['Al2O3'] * 2) / 101.9602
-        df_cation['Cr_cation'] = (epma_table['Cr2O3'] * 2) / 151.9902
         df_cation['Fe3+_cation'] = (epma_table['Fe2O3'] * 2) / 60.0843
         df_cation['Fe2+_cation'] = epma_table['FeO'] / 71.8464
         df_cation['Mn_cation'] = epma_table['MnO'] / 70.9374
@@ -54,101 +52,111 @@ def normalization(epma_table):
         df_cation['Ca_cation'] = epma_table['CaO'] / 56.0794
         df_cation['Na_cation'] = (epma_table['Na2O'] * 2) / 61.9774
         df_cation['K_cation'] = (epma_table['K2O'] * 2) / 94.196
-        df_cation['total_cation'] = df_cation.sum(axis='columns') - df_cation['Ca_cation'] - df_cation['Sr_cation']
-        df_cation['total_cation + Ca + Sr'] = df_cation.sum(axis='columns')  # falta adicionar o Sr
+        df_cation['total_cationFM+Ca'] = df_cation.sum(axis='columns') - df_cation['Na_cation'] - df_cation['K_cation']
+        df_cation['total_cationFM'] = df_cation.sum(axis='columns') - df_cation['Ca_cation'] - df_cation['Na_cation'] - df_cation['K_cation'] - df_cation['total_cationFM+Ca']
 
         return df_cation
 
-    return normalization_anion(), normalization_cation()
+    an_prop, cat_prop = normalization_anion(), normalization_cation()
 
+    def normalization_13(anion_proportions, cat_proportions):
+        """S13 normalized based on anions"""
 
-def normalization_pt3a(dataframe):
-    """S13 normalized based on anions"""
-    df_s13 = pd.DataFrame()
+        anion = anion_proportions
+        cation = cat_proportions
+        df_s13 = pd.DataFrame()
 
-    df_s13['Si_S13'] = 13 * dataframe['Si_anion'] / dataframe['total_cation']
-    df_s13['Ti_S13'] = 13 * dataframe['Ti_anion'] / dataframe['total_cation']
-    df_s13['Al_S13'] = 13 * dataframe['Al_anion'] / dataframe['total_cation']
-    df_s13['Fe3+_S13'] = 13 * dataframe['Fe3_anion'] / dataframe['total_cation']
-    df_s13['Fe2+_S13'] = 13 * dataframe['Fe2_anion'] / dataframe['total_cation']
-    df_s13['Mn_S13'] = 13 * dataframe['Mn_anion'] / dataframe['total_cation']
-    df_s13['Mg_S13'] = 13 * dataframe['Mg_anion'] / dataframe['total_cation']
-    df_s13['Ca_S13'] = 13 * dataframe['Ca_anion'] / dataframe['total_cation']
-    df_s13['Na_S13'] = 13 * dataframe['Na_anion'] / dataframe['total_cation']
-    df_s13['K_S13'] = 13 * dataframe['K_anion'] / dataframe['total_cation']
-    df_s13['total_S13'] = df_s13.sum(axis='columns')
+        df_s13['Si_S13'] = 13 * anion['Si_anion'] / cation['total_cationFM']
+        df_s13['Ti_S13'] = 13 * anion['Ti_anion'] / cation['total_cationFM']
+        df_s13['Al_S13'] = 13 * anion['Al_anion'] / cation['total_cationFM']
+        df_s13['Fe2+_S13'] = 13 * anion['Fe2_anion'] / cation['total_cationFM']
+        df_s13['Fe3+_S13'] = 0
+        df_s13['Mn_S13'] = 13 * anion['Mn_anion'] / cation['total_cationFM']
+        df_s13['Mg_S13'] = 13 * anion['Mg_anion'] / cation['total_cationFM']
+        df_s13['Ca_S13'] = 13 * anion['Ca_anion'] / cation['total_cationFM']
+        df_s13['Na_S13'] = 13 * anion['Na_anion'] / cation['total_cationFM']
+        df_s13['K_S13'] = 13 * anion['K_anion'] / cation['total_cationFM']
+        df_s13['total_S13'] = df_s13.sum(axis='columns')
 
-    return df_s13
+        return df_s13
 
+    def normalization_15(anion_proportions, cat_proportions):
+        """S15 normalized based on anions"""
 
-def normalization_pt3b(dataframe):
-    """S15 normalized based on anions"""
+        anion = anion_proportions
+        cation = cat_proportions
+        df_s15 = pd.DataFrame()
 
-    df_s15 = pd.DataFrame()
+        df_s15['Si_S15'] = 15 * anion['Si_anion'] / cation['total_cationFM+Ca']
+        df_s15['Ti_S15'] = 15 * anion['Ti_anion'] / cation['total_cationFM+Ca']
+        df_s15['Al_S15'] = 15 * anion['Al_anion'] / cation['total_cationFM+Ca']
+        df_s15['Fe2+_S15'] = 15 * anion['Fe2_anion'] / cation['total_cationFM+Ca']
+        df_s15['Fe3+_S15'] = 0
+        df_s15['Mn_S15'] = 15 * anion['Mn_anion'] / cation['total_cationFM+Ca']
+        df_s15['Mg_S15'] = 15 * anion['Mg_anion'] / cation['total_cationFM+Ca']
+        df_s15['Ca_S15'] = 15 * anion['Ca_anion'] / cation['total_cationFM+Ca']
+        df_s15['Na_S15'] = 15 * anion['Na_anion'] / cation['total_cationFM+Ca']
+        df_s15['K_S15'] = 15 * anion['K_anion'] / cation['total_cationFM+Ca']
+        df_s15['total_S15'] = df_s15.sum(axis='columns')
 
-    df_s15['Si_S15'] = 15 * dataframe['Si_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Ti_S15'] = 15 * dataframe['Ti_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Al_S15'] = 15 * dataframe['Al_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Cr_S15'] = 15 * dataframe['Cr_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Fe3+_S15'] = 15 * dataframe['Fe3_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Fe2+_S15'] = 15 * dataframe['Fe2_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Mn_S15'] = 15 * dataframe['Mn_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Mg_S15'] = 15 * dataframe['Mg_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Ca_S15'] = 15 * dataframe['Ca_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['Na_S15'] = 15 * dataframe['Na_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['K_S3'] = 15 * dataframe['K_anion'] / dataframe['total_cation + Ca + Sr']
-    df_s15['total_S15'] = df_s15.sum(axis='columns')
+        return df_s15
 
-    return df_s15
+    s13, s15 = normalization_13(an_prop, cat_prop), normalization_15(an_prop, cat_prop)
 
+    def oxid(s13_normalized, s15_normalized):
+        # Fe3+ calculation
 
-def iron_ox_state(dataframe):
-    """
-    Iron oxidation state calculation
-    """
+        # S13
+        s13_normalized['Fe3+_S13'] = 2 * (23 - s13_normalized['total_S13'])
 
-    # Cálculo da oxidação para S13
-    fe3 = 2 * (23-dataframe['total_S13'])
-    if fe3 < 0:
-        fe3 = 0
-    else:
-        fe3 = fe3
+        for index, value in enumerate(s13_normalized['Fe3+_S13']):
+            if value < 0:
+                s13_normalized['Fe3+_S13'][index] = 0
+            else:
+                s13_normalized['Fe3+_S13'][index] = value
+        # S15
+        s15_normalized['Fe3+_S15'] = 2 * (23 - s15_normalized['total_S15'])
 
-    if fe3 > dataframe['Fe2+_S13']:
-        fe3 = dataframe['Fe2+_S13']
-    else:
-        fe3 = fe3
+        for index, value in enumerate(s15_normalized['Fe3+_S15']):
+            if value < 0:
+                s15_normalized['Fe3+_S15'][index] = 0
+            else:
+                s15_normalized['Fe3+_S15'][index] = value
 
-    fe2 = dataframe['Fe2+_S13'] - fe3
+        # Fe3+ and Fe2+ calculation S13
+        for index, value in enumerate(s13_normalized['Fe3+_S13']):
+            if value > s13_normalized['Fe2+_S13'][index]:
+                s13_normalized['Fe3+_S13'][index] = s13_normalized['Fe2+_S13'][index]
+            else:
+                s13_normalized['Fe3+_S13'][index] = s13_normalized['Fe3+_S13'][index]
 
-    # Cálculo da oxidação para S15
-    fe3 = 2 * (23 - dataframe['total_S15'])
-    if fe3 < 0:
-        fe3 = 0
-    else:
-        fe3 = fe3
+        s13_normalized['Fe2+_S13'] = s13_normalized['Fe2+_S13'] - s13_normalized['Fe3+_S13']
 
-    if fe3 > dataframe['Fe2+_S15']:
-        fe3 = dataframe['Fe2+_S15']
-    else:
-        fe3 = fe3
+        # Fe3+ and Fe2+ calculation S15
+        for index, value in enumerate(s15_normalized['Fe3+_S15']):
+            if value > s15_normalized['Fe2+_S15'][index]:
+                s15_normalized['Fe3+_S15'][index] = s15_normalized['Fe2+_S15'][index]
+            else:
+                s15_normalized['Fe3+_S15'][index] = s15_normalized['Fe3+_S15'][index]
 
-    fe2 = dataframe['Fe2+_S15'] - fe3
+        s15_normalized['Fe2+_S15'] = s15_normalized['Fe2+_S15'] - s15_normalized['Fe3+_S15']
 
+        return s13, s15
 
-def cation_o23_s13(dataframe):
-    cat_df = pd.DataFrame()
+    s13_ox, s15_ox = oxid(s13, s15)
 
-    cat_df['Si'] = 23 * dataframe['Si_cation'] / dataframe['total_anion']
-    cat_df['Ti'] = 23 * dataframe['Ti_cation'] / dataframe['total_anion']
-    cat_df['Al'] = 23 * dataframe['Al_cation'] / dataframe['total_anion']
-    cat_df['Fe3+'] = 23 * dataframe['Fe3+_S13'] * (dataframe['total_cation'] / 13) / dataframe['total_anion']
-    cat_df['Fe2+'] = 23 * dataframe['Fe2+_S13'] * (dataframe['total_cation'] / 13) / dataframe['total_anion']
-    cat_df['Mn'] = 23 * dataframe['Si_cation'] / dataframe['total_anion']
-    cat_df['Mg'] = 23 * dataframe['Ti_cation'] / dataframe['total_anion']
-    cat_df['Ca'] = 23 * dataframe['Al_cation'] / dataframe['total_anion']
-    cat_df['Na'] = 23 * dataframe['Si_cation'] / dataframe['total_anion']
-    cat_df['K'] = 23 * dataframe['Ti_cation'] / dataframe['total_anion']
-    cat_df['Total'] = cat_df.sum(axis='columns')
+    # Cations based on 23 Oxygens S13 Cations
+    def cat_based_on_23o_s13(an, cat, oxid_state):
+        df_cat = pd.DataFrame()
+        df_cat['Si'] = 23 * cat['Si_cation'] / an['total_anion']
+        df_cat['Ti'] = 23 * cat['Ti_cation'] / an['total_anion']
+        df_cat['Al'] = 23 * cat['Al_cation'] / an['total_anion']
+        df_cat['Fe2+'] = 23 * oxid_state['Fe3+_S13'] * (cat['total_cationFM'] / 13) / an['total_anion']
+        df_cat['Fe3+'] = 23 * oxid_state['Fe2+_S13'] * (cat['total_cationFM'] / 13) / an['total_anion']
 
-    return cat_df
+        return df_cat
+
+    final = cat_based_on_23o_s13(an_prop, cat_prop, s13_ox)
+
+    return final
+

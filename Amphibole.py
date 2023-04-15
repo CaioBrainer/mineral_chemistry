@@ -145,18 +145,82 @@ def normalization(epma_table):
 
     s13_ox, s15_ox = oxid(s13, s15)
 
-    # Cations based on 23 Oxygens S13 Cations
-    def cat_based_on_23o_s13(an, cat, oxid_state):
-        df_cat = pd.DataFrame()
-        df_cat['Si'] = 23 * cat['Si_cation'] / an['total_anion']
-        df_cat['Ti'] = 23 * cat['Ti_cation'] / an['total_anion']
-        df_cat['Al'] = 23 * cat['Al_cation'] / an['total_anion']
-        df_cat['Fe2+'] = 23 * oxid_state['Fe3+_S13'] * (cat['total_cationFM'] / 13) / an['total_anion']
-        df_cat['Fe3+'] = 23 * oxid_state['Fe2+_S13'] * (cat['total_cationFM'] / 13) / an['total_anion']
+    # Cations based on 23 Oxygens
+    def cat_based_on_23o(an, cat, oxid_state13, oxid_state15):
+        df_13cat = pd.DataFrame()
+        df_15cat = pd.DataFrame()
 
-        return df_cat
+        # S13 Cations
+        df_13cat['Si'] = 23 * cat['Si_cation'] / an['total_anion']
+        df_13cat['Ti'] = 23 * cat['Ti_cation'] / an['total_anion']
+        df_13cat['Al'] = 23 * cat['Al_cation'] / an['total_anion']
+        df_13cat['Fe2+'] = 23 * oxid_state13['Fe2+_S13'] * (cat['total_cationFM'] / 13) / an['total_anion']
+        df_13cat['Fe3+'] = 23 * oxid_state13['Fe3+_S13'] * (cat['total_cationFM'] / 13) / an['total_anion']
+        df_13cat['Mn'] = 23 * cat['Mn_cation'] / an['total_anion']
+        df_13cat['Mg'] = 23 * cat['Mg_cation'] / an['total_anion']
+        df_13cat['Ca'] = 23 * cat['Ca_cation'] / an['total_anion']
+        df_13cat['Na'] = 23 * cat['Na_cation'] / an['total_anion']
+        df_13cat['K'] = 23 * cat['Ti_cation'] / an['total_anion']
 
-    final = cat_based_on_23o_s13(an_prop, cat_prop, s13_ox)
+        # S15 Cations
+        df_15cat['Si'] = df_13cat['Si']
+        df_15cat['Ti'] = df_13cat['Ti']
+        df_15cat['Al'] = df_13cat['Al']
+        df_15cat['Fe2+'] = 23 * oxid_state15['Fe2+_S15'] * (cat['total_cationFM+Ca'] / 15) / an['total_anion']
+        df_15cat['Fe3+'] = 23 * oxid_state15['Fe3+_S15'] * (cat['total_cationFM+Ca'] / 15) / an['total_anion']
+        df_15cat['Mn'] = df_13cat['Mn']
+        df_15cat['Mg'] = df_13cat['Mg']
+        df_15cat['Ca'] = df_13cat['Ca']
+        df_15cat['Na'] = df_13cat['Na']
+        df_15cat['K'] = df_13cat['K']
 
-    return final
+        return df_13cat, df_15cat
 
+    cat_based13, cat_based15 = cat_based_on_23o(an_prop, cat_prop, s13_ox, s15_ox)
+
+    def recheck_anion_sum(cb13, cb15):
+
+        # S13 Cations
+        cb13['Si'] = cb13['Si'] * 2
+        cb13['Ti'] = cb13['Ti'] * 2
+        cb13['Al'] = cb13['Al'] * 1.5
+        cb13['Fe2+'] = cb13['Fe2+']
+        cb13['Fe3+'] = cb13['Fe3+'] * 1.5
+        cb13['Mn'] = cb13['Mn']
+        cb13['Mg'] = cb13['Mg']
+        cb13['Ca'] = cb13['Ca']
+        cb13['Na'] = cb13['Na'] * 0.5
+        cb13['K'] = cb13['K'] * 0.5
+        cb13['Total'] = cb13.sum(axis='columns')
+        cb13['adjustment'] = 23 / cb13['Total']
+
+        # S15 Cations
+        cb15['Si'] = cb15['Si'] * 2
+        cb15['Ti'] = cb15['Ti'] * 2
+        cb15['Al'] = cb15['Al'] * 1.5
+        cb15['Fe2+'] = cb15['Fe2+']
+        cb15['Fe3+'] = cb15['Fe3+'] * 1.5
+        cb15['Mn'] = cb15['Mn']
+        cb15['Mg'] = cb15['Mg']
+        cb15['Ca'] = cb15['Ca']
+        cb15['Na'] = cb15['Na'] * 0.5
+        cb15['K'] = cb15['K'] * 0.5
+        cb15['Total'] = cb15.sum(axis='columns')
+        cb15['adjustment'] = 23 / cb15['Total']
+
+        return cb13, cb15
+
+    recheck13, recheck15 = recheck_anion_sum(cat_based13, cat_based15)
+
+    def formulae(df_recheck13, df_recheck15):
+
+        # # S13 Cations
+        df_recheck13['Si'] = (df_recheck13['Si'] * df_recheck13['adjustment']) / 2
+        df_recheck13['Ti'] = (df_recheck13['Ti'] * df_recheck13['adjustment']) / 2
+        df_recheck13['Al'] = (df_recheck13['Al'] * df_recheck13['adjustment']) / 1.5
+        df_recheck13['Fe2+'] = (df_recheck13['Fe2+'] * df_recheck13['adjustment'])
+        df_recheck13['Fe3+'] = (df_recheck13['Fe3+'] * df_recheck13['adjustment']) / 1.5
+
+        # S15 Cations
+
+    return recheck13, recheck15

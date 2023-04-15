@@ -160,7 +160,7 @@ def normalization(epma_table):
         df_13cat['Mg'] = 23 * cat['Mg_cation'] / an['total_anion']
         df_13cat['Ca'] = 23 * cat['Ca_cation'] / an['total_anion']
         df_13cat['Na'] = 23 * cat['Na_cation'] / an['total_anion']
-        df_13cat['K'] = 23 * cat['Ti_cation'] / an['total_anion']
+        df_13cat['K'] = 23 * cat['K_cation'] / an['total_anion']
 
         # S15 Cations
         df_15cat['Si'] = df_13cat['Si']
@@ -212,15 +212,64 @@ def normalization(epma_table):
 
     recheck13, recheck15 = recheck_anion_sum(cat_based13, cat_based15)
 
-    def formulae(df_recheck13, df_recheck15):
+    def formulae(_s13, _s15):
+        """
+        :param _s15: tabular data of Recheck sum anions 13 cations
+        :param _s13: tabular data of Recheck sum anions 13 cations
+        :return: formulae based on 23 Oxygens for 13 and 15 cations
+        """
 
-        # # S13 Cations
-        df_recheck13['Si'] = (df_recheck13['Si'] * df_recheck13['adjustment']) / 2
-        df_recheck13['Ti'] = (df_recheck13['Ti'] * df_recheck13['adjustment']) / 2
-        df_recheck13['Al'] = (df_recheck13['Al'] * df_recheck13['adjustment']) / 1.5
-        df_recheck13['Fe2+'] = (df_recheck13['Fe2+'] * df_recheck13['adjustment'])
-        df_recheck13['Fe3+'] = (df_recheck13['Fe3+'] * df_recheck13['adjustment']) / 1.5
+        formulae_s13 = pd.DataFrame()
+        formulae_s15 = pd.DataFrame()
+
+        # S13 Cations
+        formulae_s13['Si'] = (_s13['Si'] * _s13['adjustment']) / 2
+        formulae_s13['Ti'] = (_s13['Ti'] * _s13['adjustment']) / 2
+        formulae_s13['Al'] = (_s13['Al'] * _s13['adjustment']) / 1.5
+        formulae_s13['Fe2+'] = (_s13['Fe2+'] * _s13['adjustment'])
+        formulae_s13['Fe3+'] = (_s13['Fe3+'] * _s13['adjustment']) / 1.5
+        formulae_s13['Mn'] = (_s13['Mn'] * _s13['adjustment'])
+        formulae_s13['Mg'] = (_s13['Mg'] * _s13['adjustment'])
+        formulae_s13['Ca'] = (_s13['Ca'] * _s13['adjustment'])
+        formulae_s13['Na'] = (_s13['Na'] * _s13['adjustment']) / 0.5
+        formulae_s13['K'] = (_s13['K'] * _s13['adjustment']) / 0.5
 
         # S15 Cations
+        formulae_s15['Si'] = (_s15['Si'] * _s15['adjustment']) / 2
+        formulae_s15['Ti'] = (_s15['Ti'] * _s15['adjustment']) / 2
+        formulae_s15['Al'] = (_s15['Al'] * _s15['adjustment']) / 1.5
+        formulae_s15['Fe2+'] = (_s15['Fe2+'] * _s15['adjustment'])
+        formulae_s15['Fe3+'] = (_s15['Fe3+'] * _s15['adjustment']) / 1.5
+        formulae_s15['Mn'] = (_s15['Mn'] * _s15['adjustment'])
+        formulae_s15['Mg'] = (_s15['Mg'] * _s15['adjustment'])
+        formulae_s15['Ca'] = (_s15['Ca'] * _s15['adjustment'])
+        formulae_s15['Na'] = (_s15['Na'] * _s15['adjustment']) / 0.5
+        formulae_s15['K'] = (_s15['K'] * _s15['adjustment']) / 0.5
 
-    return recheck13, recheck15
+        return formulae_s13, formulae_s15
+
+    formulae_s13, formulae_s15 = formulae(recheck13, recheck15)
+
+    def selection(formulaes13, formulaes15):
+        """
+
+        :param formulaes13: tabular data based on 23 Oxygens for 13 cations
+        :param formulaes15: tabular data based on 23 Oxygens for 15 cations
+        :return: select S13 o S15 cations data
+        """
+
+        formulaes13 = formulaes13
+        formulaes15 = formulaes15
+        final_formulaes = formulaes13.copy()
+
+        for index, value in enumerate(formulaes13):
+            if (formulaes13['Ca'][index] + formulaes13['Na'][index]) < 1.34:
+                final_formulaes.loc[index] = formulaes15.loc[index]
+            else:
+                final_formulaes.loc[index] = formulaes13.loc[index]
+
+        return final_formulaes
+
+    formula = selection(formulae_s13, formulae_s15)
+
+    return formula

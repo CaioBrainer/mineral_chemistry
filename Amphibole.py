@@ -111,33 +111,33 @@ def normalization(epma_table):
 
         for index, value in enumerate(s13_normalized['Fe3+_S13']):
             if value < 0:
-                s13_normalized['Fe3+_S13'][index] = 0
+                s13_normalized['Fe3+_S13'].loc[index] = 0
             else:
-                s13_normalized['Fe3+_S13'][index] = value
+                s13_normalized['Fe3+_S13'].loc[index] = value
         # S15
         s15_normalized['Fe3+_S15'] = 2 * (23 - s15_normalized['total_S15'])
 
         for index, value in enumerate(s15_normalized['Fe3+_S15']):
             if value < 0:
-                s15_normalized['Fe3+_S15'][index] = 0
+                s15_normalized['Fe3+_S15'].loc[index] = 0
             else:
-                s15_normalized['Fe3+_S15'][index] = value
+                s15_normalized['Fe3+_S15'].loc[index] = value
 
         # Fe3+ and Fe2+ calculation S13
         for index, value in enumerate(s13_normalized['Fe3+_S13']):
-            if value > s13_normalized['Fe2+_S13'][index]:
-                s13_normalized['Fe3+_S13'][index] = s13_normalized['Fe2+_S13'][index]
+            if value > s13_normalized['Fe2+_S13'].loc[index]:
+                s13_normalized['Fe3+_S13'].loc[index] = s13_normalized['Fe2+_S13'].loc[index]
             else:
-                s13_normalized['Fe3+_S13'][index] = s13_normalized['Fe3+_S13'][index]
+                s13_normalized['Fe3+_S13'].loc[index] = s13_normalized['Fe3+_S13'].loc[index]
 
         s13_normalized['Fe2+_S13'] = s13_normalized['Fe2+_S13'] - s13_normalized['Fe3+_S13']
 
         # Fe3+ and Fe2+ calculation S15
         for index, value in enumerate(s15_normalized['Fe3+_S15']):
-            if value > s15_normalized['Fe2+_S15'][index]:
-                s15_normalized['Fe3+_S15'][index] = s15_normalized['Fe2+_S15'][index]
+            if value > s15_normalized['Fe2+_S15'].loc[index]:
+                s15_normalized['Fe3+_S15'].loc[index] = s15_normalized['Fe2+_S15'].loc[index]
             else:
-                s15_normalized['Fe3+_S15'][index] = s15_normalized['Fe3+_S15'][index]
+                s15_normalized['Fe3+_S15'].loc[index] = s15_normalized['Fe3+_S15'].loc[index]
 
         s15_normalized['Fe2+_S15'] = s15_normalized['Fe2+_S15'] - s15_normalized['Fe3+_S15']
 
@@ -255,7 +255,7 @@ def normalization(epma_table):
 
         :param formulaes13: tabular data based on 23 Oxygens for 13 cations
         :param formulaes15: tabular data based on 23 Oxygens for 15 cations
-        :return: select S13 o S15 cations data
+        :return: select S13 or S15 cations data and returns a normalized dataset
         """
 
         formulaes13 = formulaes13
@@ -263,7 +263,7 @@ def normalization(epma_table):
         final_formulaes = formulaes13.copy()
 
         for index, value in enumerate(formulaes13):
-            if (formulaes13['Ca'][index] + formulaes13['Na'][index]) < 1.34:
+            if (formulaes13['Ca'].loc[index] + formulaes13['Na'].loc[index]) < 1.34:
                 final_formulaes.loc[index] = formulaes15.loc[index]
             else:
                 final_formulaes.loc[index] = formulaes13.loc[index]
@@ -272,4 +272,27 @@ def normalization(epma_table):
 
     formula = selection(formulae_s13, formulae_s15)
 
-    return formula
+    def indices(df):
+
+        teste = df
+
+        # Al iv
+
+        for index, value in enumerate(teste['Ti']):
+            if (teste['Si'].loc[index] + teste['Al'].loc[index]) >= 8:
+                teste['Al_iv'] = 8 - teste['Si']
+            else:
+                teste['Al_iv'] = teste['Al']
+            # Al vi
+            teste['Al_vi'] = teste['Al'] - teste['Al_iv']
+            # Si
+            if teste['Si'].loc[index] > 8:
+                teste['Si'].loc[index] = 8
+            else:
+                teste['Si'].loc[index] = teste['Si'].loc[index]
+
+        return teste
+
+    formula2 = indices(formula)
+
+    return formula2

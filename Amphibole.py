@@ -53,7 +53,8 @@ def normalization(epma_table):
         df_cation['Na_cation'] = (epma_table['Na2O'] * 2) / 61.9774
         df_cation['K_cation'] = (epma_table['K2O'] * 2) / 94.196
         df_cation['total_cationFM+Ca'] = df_cation.sum(axis='columns') - df_cation['Na_cation'] - df_cation['K_cation']
-        df_cation['total_cationFM'] = df_cation.sum(axis='columns') - df_cation['Ca_cation'] - df_cation['Na_cation'] - df_cation['K_cation'] - df_cation['total_cationFM+Ca']
+        df_cation['total_cationFM'] = df_cation.sum(axis='columns') - df_cation['Ca_cation'] - df_cation['Na_cation']\
+                                      - df_cation['K_cation'] - df_cation['total_cationFM+Ca']
 
         return df_cation
 
@@ -272,27 +273,40 @@ def normalization(epma_table):
 
     formula = selection(formulae_s13, formulae_s15)
 
+    # Inserir a função indices dentro da função selection porteriormente!!!!!!!!!!!!!!!!!
     def indices(df):
+        """
+        Indices calculation.
 
-        teste = df
+        :param df: Formulae normalized based on cations.
+        :return: Return dataset with columns for Al iv, Al vi, (Ca+Na) (B), (Na+K) (A), Mg/(Mg+Fe2), Fe3/(Fe3+Alvi) and
+                Sum of S2.
+        """
 
-        # Al iv
+        formulae = df
 
-        for index, value in enumerate(teste['Ti']):
-            if (teste['Si'].loc[index] + teste['Al'].loc[index]) >= 8:
-                teste['Al_iv'] = 8 - teste['Si']
+        for index, value in enumerate(formulae):
+            # Al iv
+            if (formulae['Si'].loc[index] + formulae['Al'].loc[index]) >= 8:
+                formulae['Al_iv'] = 8 - formulae['Si']
+                if formulae['Al_iv'].loc[index] > 0:
+                    continue
+                else:
+                    formulae['Al_iv'].loc[index] = 0
+
             else:
-                teste['Al_iv'] = teste['Al']
+                formulae['Al_iv'].loc[index] = formulae['Al'].loc[index]
+            # impedir Al negativo
             # Al vi
-            teste['Al_vi'] = teste['Al'] - teste['Al_iv']
+            formulae['Al_vi'] = formulae['Al'] - formulae['Al_iv']
             # Si
-            if teste['Si'].loc[index] > 8:
-                teste['Si'].loc[index] = 8
+            if formulae['Si'].loc[index] > 8:
+                formulae['Si'].loc[index] = 8
             else:
-                teste['Si'].loc[index] = teste['Si'].loc[index]
+                formulae['Si'].loc[index] = formulae['Si'].loc[index]
 
-        return teste
+        return formulae
 
-    formula2 = indices(formula)
+    formulae = indices(formula)
 
-    return formula2
+    return formulae

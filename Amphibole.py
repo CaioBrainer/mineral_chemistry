@@ -16,12 +16,15 @@ def normalization(epma_table):
                 :returns: Anion and Cation normalized proportions dataframes
     """
 
-    def normalization_anion():
-        """Anions proportion calculation
-            :returns: Anion normalized proportions epma_table
+    def norm():
+        """Anions and Cations proportion calculation
+            :returns: Anion and Cation normalized proportions epma_table
         """
-        df_anion = pd.DataFrame()
 
+        df_anion = pd.DataFrame()
+        df_cation = pd.DataFrame()
+
+        # Anion normalized calculation
         df_anion['Si_anion'] = (epma_table['SiO2'] * 2) / 60.0843
         df_anion['Ti_anion'] = (epma_table['TiO2'] * 2) / 79.8788
         df_anion['Al_anion'] = (epma_table['Al2O3'] * 3) / 101.9602
@@ -34,14 +37,7 @@ def normalization(epma_table):
         df_anion['K_anion'] = epma_table['K2O'] / 94.196
         df_anion['total_anion'] = df_anion.sum(axis='columns')
 
-        return df_anion
-
-    def normalization_cation():
-        """Cation proportion calculation
-            :returns: Cation normalized proportions epma_table
-        """
-        df_cation = pd.DataFrame()
-
+        # Anion normalized calculation
         df_cation['Si_cation'] = epma_table['SiO2'] / 60.0843
         df_cation['Ti_cation'] = epma_table['TiO2'] / 79.8788
         df_cation['Al_cation'] = (epma_table['Al2O3'] * 2) / 101.9602
@@ -53,12 +49,12 @@ def normalization(epma_table):
         df_cation['Na_cation'] = (epma_table['Na2O'] * 2) / 61.9774
         df_cation['K_cation'] = (epma_table['K2O'] * 2) / 94.196
         df_cation['total_cationFM+Ca'] = df_cation.sum(axis='columns') - df_cation['Na_cation'] - df_cation['K_cation']
-        df_cation['total_cationFM'] = df_cation.sum(axis='columns') - df_cation['Ca_cation'] - df_cation['Na_cation']\
+        df_cation['total_cationFM'] = df_cation.sum(axis='columns') - df_cation['Ca_cation'] - df_cation['Na_cation'] \
                                       - df_cation['K_cation'] - df_cation['total_cationFM+Ca']
 
-        return df_cation
+        return df_anion, df_cation
 
-    an_prop, cat_prop = normalization_anion(), normalization_cation()
+    an_prop, cat_prop = norm()
 
     def normalization_13(anion_proportions, cat_proportions):
         """S13 normalized based on anions"""
@@ -213,7 +209,7 @@ def normalization(epma_table):
 
     recheck13, recheck15 = recheck_anion_sum(cat_based13, cat_based15)
 
-    def formulae(_s13, _s15):
+    def final_formulaes(_s13, _s15):
         """
         :param _s15: tabular data of Recheck sum anions 13 cations
         :param _s13: tabular data of Recheck sum anions 13 cations
@@ -249,7 +245,7 @@ def normalization(epma_table):
 
         return formulae_s13, formulae_s15
 
-    formulae_s13, formulae_s15 = formulae(recheck13, recheck15)
+    formulae_s13, formulae_s15 = final_formulaes(recheck13, recheck15)
 
     def selection(formulaes13, formulaes15):
         """
@@ -269,44 +265,30 @@ def normalization(epma_table):
             else:
                 final_formulaes.loc[index] = formulaes13.loc[index]
 
+        for index, value in enumerate(final_formulaes):
+            # Al iv
+            if (final_formulaes['Si'].loc[index] + final_formulaes['Al'].loc[index]) >= 8:
+                final_formulaes['Al_iv'] = 8 - final_formulaes['Si']
+                if final_formulaes['Al_iv'].loc[index] > 0:
+                    continue
+                else:
+                    final_formulaes['Al_iv'].loc[index] = 0
+
+            else:
+                final_formulaes['Al_iv'].loc[index] = final_formulaes['Al'].loc[index]
+            # impedir Al negativo
+            # Al vi
+            final_formulaes['Al_vi'] = final_formulaes['Al'] - final_formulaes['Al_iv']
+            # Si
+            if final_formulaes['Si'].loc[index] > 8:
+                final_formulaes['Si'].loc[index] = 8
+            else:
+                final_formulaes['Si'].loc[index] = final_formulaes['Si'].loc[index]
+
+        final_formulaes['Soma_S2'] = final_formulaes.sum(axis='columns')
+
         return final_formulaes
 
     formula = selection(formulae_s13, formulae_s15)
 
-    # Inserir a função indices dentro da função selection porteriormente!!!!!!!!!!!!!!!!!
-    def indices(df):
-        """
-        Indices calculation.
-
-        :param df: Formulae normalized based on cations.
-        :return: Return dataset with columns for Al iv, Al vi, (Ca+Na) (B), (Na+K) (A), Mg/(Mg+Fe2), Fe3/(Fe3+Alvi) and
-                Sum of S2.
-        """
-
-        formulae = df
-
-        for index, value in enumerate(formulae):
-            # Al iv
-            if (formulae['Si'].loc[index] + formulae['Al'].loc[index]) >= 8:
-                formulae['Al_iv'] = 8 - formulae['Si']
-                if formulae['Al_iv'].loc[index] > 0:
-                    continue
-                else:
-                    formulae['Al_iv'].loc[index] = 0
-
-            else:
-                formulae['Al_iv'].loc[index] = formulae['Al'].loc[index]
-            # impedir Al negativo
-            # Al vi
-            formulae['Al_vi'] = formulae['Al'] - formulae['Al_iv']
-            # Si
-            if formulae['Si'].loc[index] > 8:
-                formulae['Si'].loc[index] = 8
-            else:
-                formulae['Si'].loc[index] = formulae['Si'].loc[index]
-
-        return formulae
-
-    formulae = indices(formula)
-
-    return formulae
+    return formula

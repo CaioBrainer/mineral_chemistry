@@ -123,9 +123,9 @@ def normalization(epma_table):
         # Fe3+ and Fe2+ calculation S13
         for index, value in enumerate(s13_normalized['Fe3+_S13']):
             if value > s13_normalized['Fe2+_S13'].loc[index]:
-                s13_normalized['Fe3+_S13'].loc[index] = s13_normalized['Fe2+_S13'].loc[index]
+                s13_normalized.loc[index, 'Fe3+_S13'] = s13_normalized['Fe2+_S13'].loc[index]
             else:
-                s13_normalized['Fe3+_S13'].loc[index] = s13_normalized['Fe3+_S13'].loc[index]
+                s13_normalized.loc[index, 'Fe3+_S13'] = s13_normalized['Fe3+_S13'].loc[index]
 
         s13_normalized['Fe2+_S13'] = s13_normalized['Fe2+_S13'] - s13_normalized['Fe3+_S13']
 
@@ -265,17 +265,16 @@ def normalization(epma_table):
             else:
                 final_formulaes.loc[index] = formulaes13.loc[index]
 
-        for index, value in enumerate(final_formulaes):
+        # final_formulaes['Al_iv'] = 0
+        for index, value in enumerate(final_formulaes['Si']):
             # Al iv
             if (final_formulaes['Si'].loc[index] + final_formulaes['Al'].loc[index]) >= 8:
-                final_formulaes['Al_iv'] = 8 - final_formulaes['Si']
-                if final_formulaes['Al_iv'].loc[index] > 0:
-                    continue
-                else:
-                    final_formulaes['Al_iv'].loc[index] = 0
+                final_formulaes.loc[index, 'Al_iv'] = 8 - final_formulaes['Si'].loc[index]
+                if final_formulaes['Al_iv'].loc[index] < 0:
+                    final_formulaes.loc[index, 'Al_iv'] = 0
 
             else:
-                final_formulaes['Al_iv'].loc[index] = final_formulaes['Al'].loc[index]
+                final_formulaes.loc[index, 'Al_iv'] = final_formulaes['Al'].loc[index]
             # impedir Al negativo
             # Al vi
             final_formulaes['Al_vi'] = final_formulaes['Al'] - final_formulaes['Al_iv']
@@ -297,47 +296,58 @@ def normalization(epma_table):
                               final_formulaes['Ti']
         # Excess in site (T)
         temp_df['Excess_(T)'] = 0
-        for index, value in enumerate(temp_df):
-            if temp_df.loc[index, 'Total_(T)'] > 8:
-                temp_df.loc[index, 'Excess_(T)'] = temp_df.loc[index, 'Total_(T)'] - 8
-                if temp_df.loc[index, 'Excess_(T)'] > 5:
+        for index, value in enumerate(temp_df['Total_(T)']):
+            if value > 8:
+                temp_df.loc[index, 'Excess_(T)'] = value - 8
+                if temp_df['Excess_(T)'].loc[index] > 5:
                     temp_df.loc[index, 'Excess_(T)'] = 5
             else:
                 temp_df['Excess_(T)'].loc[index] = 0
 
-        """# Total in site C
+        # Total in site C
         temp_df['Total_(C)'] = final_formulaes['Fe2+'] + \
                                final_formulaes['Mg'] + \
                                final_formulaes['Mn'] + \
-                               temp_df['Excess_(A)']
+                               temp_df['Excess_(T)']
 
         temp_df['Excess_(C)'] = 0
-        for index, value in enumerate(temp_df):
-            if temp_df['Total_(C)'] > 5:
-                temp_df['Excess_(C)'].loc[index] = temp_df['Total_(C)'].loc[index] - 5
-                if temp_df['Excess_(C)'] > 2:
-                    temp_df['Excess_(C)'].loc[index] = 2
+        for index, value in enumerate(temp_df['Total_(C)']):
+            if value > 5:
+                temp_df.loc[index, 'Excess_(C)'] = value - 5
+                if temp_df.loc[index, 'Excess_(C)'] > 2:
+                    temp_df.loc[index, 'Excess_(C)'] = 2
             else:
-                temp_df['Excess_(C)'].loc[index] = 0"""
+                temp_df.loc[index, 'Excess_(C)'] = 0
 
-        """# Total in site B
+        # Total in site B
         temp_df['Total_(B)'] = final_formulaes['Ca'] + \
-                               final_formulaes['Na'] + \
+                               formulae_s13['Na'] + \
                                temp_df['Excess_(C)']
-
+        # Excess in B
         temp_df['Excess_(B)'] = 0
         for index, value in enumerate(temp_df['Total_(B)']):
-            if temp_df['Excess_(B)'] > 2:
-                temp_df['Excess_(B)'].loc[index] = temp_df['Excess_(B)'].loc[index] - 2
+            if value > 2:
+                temp_df.loc[index, 'Excess_(B)'] = value - 2
+
+        # Excess in B restricted to Na
+        temp_df['Excess_(B)_Na'] = 0
+        for index, value in enumerate(temp_df['Excess_(B)']):
+            if value > final_formulaes['Na'].loc[index]:
+                temp_df.loc[index, 'Excess_(B)_Na'] = final_formulaes['Na'].loc[index]
             else:
-                temp_df['Excess_(B)'].loc[index] = 0"""
+                temp_df.loc[index, 'Excess_(B)_Na'] = temp_df['Excess_(B)'].loc[index]
+
+        # Total in site A
+        temp_df['Total_(A)'] = temp_df['Excess_(B)_Na'] + final_formulaes['K']
 
         final_formulaes['Total_(T)'] = temp_df['Total_(T)']
         final_formulaes['Excess_(T)'] = temp_df['Excess_(T)']
-        """final_formulaes['Total_(C)'] = temp_df['Total_(C)']
-        final_formulaes['Excess_(C)'] = temp_df['Excess_(C)']"""
-        """final_formulaes['Total_(B)'] = temp_df['Total_(B)']
-        final_formulaes['Excess_(B)'] = temp_df['Excess_(B)']"""
+        final_formulaes['Total_(C)'] = temp_df['Total_(C)']
+        final_formulaes['Excess_(C)'] = temp_df['Excess_(C)']
+        final_formulaes['Total_(B)'] = temp_df['Total_(B)']
+        final_formulaes['Excess_(B)'] = temp_df['Excess_(B)']
+        final_formulaes['Excess_(B)_Na'] = temp_df['Excess_(B)_Na']
+        final_formulaes['Total_(A)'] = temp_df['Total_(A)']
 
         return final_formulaes
 

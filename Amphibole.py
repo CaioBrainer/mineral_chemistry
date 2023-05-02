@@ -285,10 +285,76 @@ def normalization(epma_table):
             else:
                 final_formulaes['Si'].loc[index] = final_formulaes['Si'].loc[index]
 
-        final_formulaes['Soma_S2'] = final_formulaes.sum(axis='columns')
+        final_formulaes['Soma_S2'] = final_formulaes.sum(axis='columns') - final_formulaes['Ca'] - \
+                                     final_formulaes['Na'] - final_formulaes['K'] - final_formulaes['Al_vi'] - \
+                                     final_formulaes['Al_iv']
+
+        # Total in site (T):
+        temp_df = pd.DataFrame()
+        temp_df['Total_(T)'] = final_formulaes['Si'] + \
+                              final_formulaes['Al'] + \
+                              final_formulaes['Fe3+'] + \
+                              final_formulaes['Ti']
+        # Excess in site (T)
+        temp_df['Excess_(T)'] = 0
+        for index, value in enumerate(temp_df):
+            if temp_df.loc[index, 'Total_(T)'] > 8:
+                temp_df.loc[index, 'Excess_(T)'] = temp_df.loc[index, 'Total_(T)'] - 8
+                if temp_df.loc[index, 'Excess_(T)'] > 5:
+                    temp_df.loc[index, 'Excess_(T)'] = 5
+            else:
+                temp_df['Excess_(T)'].loc[index] = 0
+
+        """# Total in site C
+        temp_df['Total_(C)'] = final_formulaes['Fe2+'] + \
+                               final_formulaes['Mg'] + \
+                               final_formulaes['Mn'] + \
+                               temp_df['Excess_(A)']
+
+        temp_df['Excess_(C)'] = 0
+        for index, value in enumerate(temp_df):
+            if temp_df['Total_(C)'] > 5:
+                temp_df['Excess_(C)'].loc[index] = temp_df['Total_(C)'].loc[index] - 5
+                if temp_df['Excess_(C)'] > 2:
+                    temp_df['Excess_(C)'].loc[index] = 2
+            else:
+                temp_df['Excess_(C)'].loc[index] = 0"""
+
+        """# Total in site B
+        temp_df['Total_(B)'] = final_formulaes['Ca'] + \
+                               final_formulaes['Na'] + \
+                               temp_df['Excess_(C)']
+
+        temp_df['Excess_(B)'] = 0
+        for index, value in enumerate(temp_df['Total_(B)']):
+            if temp_df['Excess_(B)'] > 2:
+                temp_df['Excess_(B)'].loc[index] = temp_df['Excess_(B)'].loc[index] - 2
+            else:
+                temp_df['Excess_(B)'].loc[index] = 0"""
+
+        final_formulaes['Total_(T)'] = temp_df['Total_(T)']
+        final_formulaes['Excess_(T)'] = temp_df['Excess_(T)']
+        """final_formulaes['Total_(C)'] = temp_df['Total_(C)']
+        final_formulaes['Excess_(C)'] = temp_df['Excess_(C)']"""
+        """final_formulaes['Total_(B)'] = temp_df['Total_(B)']
+        final_formulaes['Excess_(B)'] = temp_df['Excess_(B)']"""
 
         return final_formulaes
 
     formula = selection(formulae_s13, formulae_s15)
 
     return formula
+
+########################################################################################################################
+#                                           Normalização de elementos testes                                           #
+########################################################################################################################
+
+
+import pandas as pd
+df = pd.read_csv("example_table.csv")
+pd.set_option('display.max_columns', None)
+df['Fe2O3'] = 0
+normalized_dataset = normalization(df)
+
+print(normalized_dataset.head(20))
+

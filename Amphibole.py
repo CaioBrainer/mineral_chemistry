@@ -1,6 +1,7 @@
 # Projeto de programa para cálculo e projeção de química mineral
 # V 0.0.1
 import pandas as pd
+import matplotlib.pyplot as plt
 
 ########################################################################################################################
 #                                            Amphibole Elements Normalization                                          #
@@ -377,6 +378,30 @@ def normalization(epma_table):
 
     return final_formulaes
 
+
+def leake1997(x, y):
+    """
+    :param x: Si nomalized
+    :param y: Mg/(Mg + Fe2+) Ratio
+    :return: Leake (1997) Diagram for (Na+K)(A) > 0.5 apfu
+    """
+    plt.subplots(figsize=(8, 6))
+    plt.xlim(7.5, 4.5)
+    plt.ylim(0, 1)
+    plt.plot([4.5, 7.5, 0, 1], [0.5, 0.5, 0.5, 0.5], color='black', zorder=1, linewidth=0.5)
+    plt.plot([6.5, 6.5, 6.5, 6.5], [6.5, 6.5, 0, 1], color='black', zorder=1, linewidth=0.5)
+    plt.plot([5.5, 5.5, 5.5, 5.5], [5.5, 5.5, 0, 1], color='black', zorder=1, linewidth=0.5)
+    plt.scatter(x, y, s=100, color='green', edgecolors='black', zorder=2)
+    plt.ylabel("$\mathrm{Mg/}\mathrm{(Mg}+\mathrm{Fe}^{2})$", fontsize=16)
+    plt.xlabel('Si',fontsize=16)
+    plt.text(7.15, 0.75, 'Edenite')
+    plt.text(7.20, 0.25, 'Fe-edenite')
+    plt.text(6.2, 0.75, 'Pargasite')
+    plt.text(6.35, 0.25, 'Mg-hastingsite')
+    plt.text(5.35, 0.75, 'Mg-sadanagaite')
+    plt.text(5.35, 0.25, 'Fe-Tschermakite')
+    plt.show()
+
 ########################################################################################################################
 #                                           Normalização de elementos testes                                           #
 ########################################################################################################################
@@ -388,4 +413,5 @@ df['Fe2O3'] = 0
 normalized_dataset = normalization(df)
 
 print(normalized_dataset.head(20))
+print(leake1997(normalized_dataset["Si"], normalized_dataset["Mg/(Mg + Fe2+)"]))
 

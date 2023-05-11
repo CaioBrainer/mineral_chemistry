@@ -3,6 +3,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+
 ########################################################################################################################
 #                                            Amphibole Elements Normalization                                          #
 ########################################################################################################################
@@ -280,9 +281,9 @@ def normalization(epma_table):
     # Total in site (T):
     temp_df = pd.DataFrame()
     temp_df['Total_(T)'] = final_formulaes['Si'] + \
-                          final_formulaes['Al'] + \
-                          final_formulaes['Fe3+'] + \
-                          final_formulaes['Ti']
+                           final_formulaes['Al'] + \
+                           final_formulaes['Fe3+'] + \
+                           final_formulaes['Ti']
     # Excess in site (T)
     temp_df['Excess_(T)'] = 0
     for index, value in enumerate(temp_df['Total_(T)']):
@@ -356,15 +357,13 @@ def normalization(epma_table):
             final_formulaes.loc[index, '(Na + K)'] = final_formulaes['K'].loc[index]
 
     # Na in site (B):
-    temp_df['Na_(B)'] = final_formulaes['Na'] - \
-                        temp_df['Excess_(B)_Na'] + \
-                        temp_df['Excess_(A)K']
+    temp_df['Na_(B)'] = final_formulaes['Na'] - temp_df['Excess_(B)_Na'] + temp_df['Excess_(A)K']
 
     # Ca + Na in site (B):
     temp_df['(Ca+Na)(B)'] = temp_df['Na_(B)'] + final_formulaes['Ca']
 
     # Mg/(Mg + Fe2+) ratio
-    temp_df['Mg/(Mg + Fe2+)'] = final_formulaes['Mg']/(final_formulaes['Mg'] + final_formulaes['Fe2+'])
+    temp_df['Mg/(Mg + Fe2+)'] = final_formulaes['Mg'] / (final_formulaes['Mg'] + final_formulaes['Fe2+'])
 
     # Fe3+/(Fe3+ + Al vi) ratio
     temp_df['Fe3+/(Fe3+ + Al_vi)'] = final_formulaes['Fe3+'] / \
@@ -393,7 +392,7 @@ def leake1997(x, y):
     plt.plot([5.5, 5.5, 5.5, 5.5], [5.5, 5.5, 0, 1], color='black', zorder=1, linewidth=0.5)
     plt.scatter(x, y, s=100, color='green', edgecolors='black', zorder=2)
     plt.ylabel("$\mathrm{Mg/}\mathrm{(Mg}+\mathrm{Fe}^{2})$", fontsize=16)
-    plt.xlabel('Si',fontsize=16)
+    plt.xlabel('Si', fontsize=16)
     plt.text(7.15, 0.75, 'Edenite')
     plt.text(7.20, 0.25, 'Fe-edenite')
     plt.text(6.2, 0.75, 'Pargasite')
@@ -401,6 +400,7 @@ def leake1997(x, y):
     plt.text(5.35, 0.75, 'Mg-sadanagaite')
     plt.text(5.35, 0.25, 'Fe-Tschermakite')
     plt.show()
+
 
 ########################################################################################################################
 #                                           Normalização de elementos testes                                           #
@@ -413,5 +413,4 @@ df['Fe2O3'] = 0
 normalized_dataset = normalization(df)
 
 print(normalized_dataset.head(20))
-print(leake1997(normalized_dataset["Si"], normalized_dataset["Mg/(Mg + Fe2+)"]))
-
+# print(leake1997(normalized_dataset["Si"], normalized_dataset["Mg/(Mg + Fe2+)"]))

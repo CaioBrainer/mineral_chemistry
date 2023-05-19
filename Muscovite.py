@@ -63,7 +63,7 @@ class Muscovites:
         return self.norm_df
 
     def tables(self):
-        tables = [self.epma_table,self.norm_df]
+        tables = [self.epma_table, self.norm_df]
         concat_tables = pd.concat(tables, axis=1)
         return concat_tables
         pass

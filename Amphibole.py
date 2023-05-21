@@ -78,10 +78,6 @@ class Amphibole:
         df_s15['K_S15'] = 15 * anion_proportions['K_anion'] / cation_proportions['total_cationFM+Ca']
         df_s15['total_S15'] = df_s15.sum(axis='columns')
 
-        # return df_s15
-    
-        # s13, s15 = normalization_13(an_prop, cat_prop), normalization_15(an_prop, cat_prop)
-
         # Fe3+ calculation
 
         # S13
@@ -123,103 +119,69 @@ class Amphibole:
         cat_based13 = pd.DataFrame()
         cat_based15 = pd.DataFrame()
 
-        # S13 Cations
+        # S13 Cations + Recheck
         cat_based13['Si'] = 23 * cation_proportions['Si_cation'] / anion_proportions['total_anion'] * 2
         cat_based13['Ti'] = 23 * cation_proportions['Ti_cation'] / anion_proportions['total_anion'] * 2
         cat_based13['Al'] = 23 * cation_proportions['Al_cation'] / anion_proportions['total_anion'] * 1.5
-        cat_based13['Fe2+'] = 23 * df_s13['Fe2+_S13'] * (cation_proportions['total_cationFM'] / 13) / anion_proportions['total_anion']
-        cat_based13['Fe3+'] = 23 * df_s13['Fe3+_S13'] * (cation_proportions['total_cationFM'] / 13) / anion_proportions['total_anion'] * 1.5
+        cat_based13['Fe2+'] = 23 * df_s13['Fe2+_S13'] * (cation_proportions['total_cationFM'] / 13) / \
+                              anion_proportions['total_anion']
+        cat_based13['Fe3+'] = 23 * df_s13['Fe3+_S13'] * (cation_proportions['total_cationFM'] / 13) / \
+                              anion_proportions['total_anion'] * 1.5
         cat_based13['Mn'] = 23 * cation_proportions['Mn_cation'] / anion_proportions['total_anion']
         cat_based13['Mg'] = 23 * cation_proportions['Mg_cation'] / anion_proportions['total_anion']
         cat_based13['Ca'] = 23 * cation_proportions['Ca_cation'] / anion_proportions['total_anion']
         cat_based13['Na'] = 23 * cation_proportions['Na_cation'] / anion_proportions['total_anion'] * 0.5
         cat_based13['K'] = 23 * cation_proportions['K_cation'] / anion_proportions['total_anion'] * 0.5
-        # cat_based13['Total'] = cat_based13.sum(axis='columns')
-        # cat_based13['adjustment'] = 23 / cat_based13['Total']
+        cat_based13['Total'] = cat_based13.sum(axis='columns')
+        cat_based13['adjustment'] = 23 / cat_based13['Total']
 
-        # S15 Cations
+        # S15 Cations + Recheck
         cat_based15['Si'] = cat_based13['Si']
         cat_based15['Ti'] = cat_based13['Ti']
         cat_based15['Al'] = cat_based13['Al']
-        cat_based15['Fe2+'] = 23 * df_s15['Fe2+_S15'] * (cation_proportions['total_cationFM+Ca'] / 15) / anion_proportions['total_anion']
-        cat_based15['Fe3+'] = 23 * df_s15['Fe3+_S15'] * (cation_proportions['total_cationFM+Ca'] / 15) / anion_proportions['total_anion']
+        cat_based15['Fe2+'] = 23 * df_s15['Fe2+_S15'] * (cation_proportions['total_cationFM+Ca'] / 15) / \
+                              anion_proportions['total_anion']
+        cat_based15['Fe3+'] = 23 * df_s15['Fe3+_S15'] * (cation_proportions['total_cationFM+Ca'] / 15) / \
+                              anion_proportions['total_anion'] * 1.5
         cat_based15['Mn'] = cat_based13['Mn']
         cat_based15['Mg'] = cat_based13['Mg']
         cat_based15['Ca'] = cat_based13['Ca']
         cat_based15['Na'] = cat_based13['Na']
         cat_based15['K'] = cat_based13['K']
+        cat_based15['Total'] = cat_based15.sum(axis='columns')
+        cat_based15['adjustment'] = 23 / cat_based15['Total']
 
+        # Final Formulas
 
-        # def recheck_anion_sum(cb13, cb15):
-    
+        formulae_s13 = pd.DataFrame()
+        formulae_s15 = pd.DataFrame()
+
         # S13 Cations
-        cb13['Si'] = cb13['Si'] * 2
-        cb13['Ti'] = cb13['Ti'] * 2
-        cb13['Al'] = cb13['Al'] * 1.5
-        cb13['Fe2+'] = cb13['Fe2+']
-        cb13['Fe3+'] = cb13['Fe3+'] * 1.5
-        cb13['Mn'] = cb13['Mn']
-        cb13['Mg'] = cb13['Mg']
-        cb13['Ca'] = cb13['Ca']
-        cb13['Na'] = cb13['Na'] * 0.5
-        cb13['K'] = cb13['K'] * 0.5
-        cb13['Total'] = cb13.sum(axis='columns')
-        cb13['adjustment'] = 23 / cb13['Total']
+        formulae_s13['Si'] = (cat_based13['Si'] * cat_based13['adjustment']) / 2
+        formulae_s13['Ti'] = (cat_based13['Ti'] * cat_based13['adjustment']) / 2
+        formulae_s13['Al'] = (cat_based13['Al'] * cat_based13['adjustment']) / 1.5
+        formulae_s13['Fe2+'] = (cat_based13['Fe2+'] * cat_based13['adjustment'])
+        formulae_s13['Fe3+'] = (cat_based13['Fe3+'] * cat_based13['adjustment']) / 1.5
+        formulae_s13['Mn'] = (cat_based13['Mn'] * cat_based13['adjustment'])
+        formulae_s13['Mg'] = (cat_based13['Mg'] * cat_based13['adjustment'])
+        formulae_s13['Ca'] = (cat_based13['Ca'] * cat_based13['adjustment'])
+        formulae_s13['Na'] = (cat_based13['Na'] * cat_based13['adjustment']) / 0.5
+        formulae_s13['K'] = (cat_based13['K'] * cat_based13['adjustment']) / 0.5
 
         # S15 Cations
-        cb15['Si'] = cb15['Si'] * 2
-        cb15['Ti'] = cb15['Ti'] * 2
-        cb15['Al'] = cb15['Al'] * 1.5
-        cb15['Fe2+'] = cb15['Fe2+']
-        cb15['Fe3+'] = cb15['Fe3+'] * 1.5
-        cb15['Mn'] = cb15['Mn']
-        cb15['Mg'] = cb15['Mg']
-        cb15['Ca'] = cb15['Ca']
-        cb15['Na'] = cb15['Na'] * 0.5
-        cb15['K'] = cb15['K'] * 0.5
-        cb15['Total'] = cb15.sum(axis='columns')
-        cb15['adjustment'] = 23 / cb15['Total']
+        formulae_s15['Si'] = (cat_based15['Si'] * cat_based15['adjustment']) / 2
+        formulae_s15['Ti'] = (cat_based15['Ti'] * cat_based15['adjustment']) / 2
+        formulae_s15['Al'] = (cat_based15['Al'] * cat_based15['adjustment']) / 1.5
+        formulae_s15['Fe2+'] = (cat_based15['Fe2+'] * cat_based15['adjustment'])
+        formulae_s15['Fe3+'] = (cat_based15['Fe3+'] * cat_based15['adjustment']) / 1.5
+        formulae_s15['Mn'] = (cat_based15['Mn'] * cat_based15['adjustment'])
+        formulae_s15['Mg'] = (cat_based15['Mg'] * cat_based15['adjustment'])
+        formulae_s15['Ca'] = (cat_based15['Ca'] * cat_based15['adjustment'])
+        formulae_s15['Na'] = (cat_based15['Na'] * cat_based15['adjustment']) / 0.5
+        formulae_s15['K'] = (cat_based15['K'] * cat_based15['adjustment']) / 0.5
 
-    
-        recheck13, recheck15 = recheck_anion_sum(cat_based13, cat_based15)
-    
-        def final_formulaes(_s13, _s15):
-            """
-            :param _s15: tabular data of Recheck sum anions 13 cations
-            :param _s13: tabular data of Recheck sum anions 13 cations
-            :return: formulae based on 23 Oxygens for 13 and 15 cations
-            """
-    
-            formulae_s13 = pd.DataFrame()
-            formulae_s15 = pd.DataFrame()
-    
-            # S13 Cations
-            formulae_s13['Si'] = (_s13['Si'] * _s13['adjustment']) / 2
-            formulae_s13['Ti'] = (_s13['Ti'] * _s13['adjustment']) / 2
-            formulae_s13['Al'] = (_s13['Al'] * _s13['adjustment']) / 1.5
-            formulae_s13['Fe2+'] = (_s13['Fe2+'] * _s13['adjustment'])
-            formulae_s13['Fe3+'] = (_s13['Fe3+'] * _s13['adjustment']) / 1.5
-            formulae_s13['Mn'] = (_s13['Mn'] * _s13['adjustment'])
-            formulae_s13['Mg'] = (_s13['Mg'] * _s13['adjustment'])
-            formulae_s13['Ca'] = (_s13['Ca'] * _s13['adjustment'])
-            formulae_s13['Na'] = (_s13['Na'] * _s13['adjustment']) / 0.5
-            formulae_s13['K'] = (_s13['K'] * _s13['adjustment']) / 0.5
-    
-            # S15 Cations
-            formulae_s15['Si'] = (_s15['Si'] * _s15['adjustment']) / 2
-            formulae_s15['Ti'] = (_s15['Ti'] * _s15['adjustment']) / 2
-            formulae_s15['Al'] = (_s15['Al'] * _s15['adjustment']) / 1.5
-            formulae_s15['Fe2+'] = (_s15['Fe2+'] * _s15['adjustment'])
-            formulae_s15['Fe3+'] = (_s15['Fe3+'] * _s15['adjustment']) / 1.5
-            formulae_s15['Mn'] = (_s15['Mn'] * _s15['adjustment'])
-            formulae_s15['Mg'] = (_s15['Mg'] * _s15['adjustment'])
-            formulae_s15['Ca'] = (_s15['Ca'] * _s15['adjustment'])
-            formulae_s15['Na'] = (_s15['Na'] * _s15['adjustment']) / 0.5
-            formulae_s15['K'] = (_s15['K'] * _s15['adjustment']) / 0.5
-    
-            return formulae_s13, formulae_s15
-    
-        formulae_s13, formulae_s15 = final_formulaes(recheck13, recheck15)
+        # return formulae_s13, formulae_s15
+        # formulae_s13, formulae_s15 = final_formulaes(recheck13, recheck15)
     
         final_formulaes = formulae_s13.copy()
     
@@ -350,30 +312,29 @@ class Amphibole:
         final_formulaes['Fe3+/(Fe3+ + Al_vi)'] = temp_df['Fe3+/(Fe3+ + Al_vi)']
     
         return final_formulaes
-    
-    
-    def leake1997(x, y):
-        """
-        :param x: Si nomalized
-        :param y: Mg/(Mg + Fe2+) Ratio
-        :return: Leake (1997) Diagram for (Na+K)(A) > 0.5 apfu
-        """
-        plt.subplots(figsize=(8, 6))
-        plt.xlim(7.5, 4.5)
-        plt.ylim(0, 1)
-        plt.plot([4.5, 7.5, 0, 1], [0.5, 0.5, 0.5, 0.5], color='black', zorder=1, linewidth=0.5)
-        plt.plot([6.5, 6.5, 6.5, 6.5], [6.5, 6.5, 0, 1], color='black', zorder=1, linewidth=0.5)
-        plt.plot([5.5, 5.5, 5.5, 5.5], [5.5, 5.5, 0, 1], color='black', zorder=1, linewidth=0.5)
-        plt.scatter(x, y, s=100, color='green', edgecolors='black', zorder=2)
-        plt.ylabel("$\mathrm{Mg/}\mathrm{(Mg}+\mathrm{Fe}^{2})$", fontsize=16)
-        plt.xlabel('Si', fontsize=16)
-        plt.text(7.15, 0.75, 'Edenite')
-        plt.text(7.20, 0.25, 'Fe-edenite')
-        plt.text(6.2, 0.75, 'Pargasite')
-        plt.text(6.35, 0.25, 'Mg-hastingsite')
-        plt.text(5.35, 0.75, 'Mg-sadanagaite')
-        plt.text(5.35, 0.25, 'Fe-Tschermakite')
-        plt.show()
+
+    # def leake1997(x, y):
+    #     """
+    #     :param x: Si nomalized
+    #     :param y: Mg/(Mg + Fe2+) Ratio
+    #     :return: Leake (1997) Diagram for (Na+K)(A) > 0.5 apfu
+    #     """
+    #     plt.subplots(figsize=(8, 6))
+    #     plt.xlim(7.5, 4.5)
+    #     plt.ylim(0, 1)
+    #     plt.plot([4.5, 7.5, 0, 1], [0.5, 0.5, 0.5, 0.5], color='black', zorder=1, linewidth=0.5)
+    #     plt.plot([6.5, 6.5, 6.5, 6.5], [6.5, 6.5, 0, 1], color='black', zorder=1, linewidth=0.5)
+    #     plt.plot([5.5, 5.5, 5.5, 5.5], [5.5, 5.5, 0, 1], color='black', zorder=1, linewidth=0.5)
+    #     plt.scatter(x, y, s=100, color='green', edgecolors='black', zorder=2)
+    #     plt.ylabel("$\mathrm{Mg/}\mathrm{(Mg}+\mathrm{Fe}^{2})$", fontsize=16)
+    #     plt.xlabel('Si', fontsize=16)
+    #     plt.text(7.15, 0.75, 'Edenite')
+    #     plt.text(7.20, 0.25, 'Fe-edenite')
+    #     plt.text(6.2, 0.75, 'Pargasite')
+    #     plt.text(6.35, 0.25, 'Mg-hastingsite')
+    #     plt.text(5.35, 0.75, 'Mg-sadanagaite')
+    #     plt.text(5.35, 0.25, 'Fe-Tschermakite')
+    #     plt.show()
 
 
 ########################################################################################################################
@@ -384,7 +345,9 @@ class Amphibole:
 df = pd.read_csv("example_table.csv")
 pd.set_option('display.max_columns', None)
 df['Fe2O3'] = 0
-normalized_dataset = normalization(df)
 
-print(normalized_dataset.head(20))
+meu_anfibolios = Amphibole(df)
+# print(meu_anfibolios.epma_dataframe)
+print(meu_anfibolios.normalization())
+# print(normalized_dataset.head(20))
 # print(leake1997(normalized_dataset["Si"], normalized_dataset["Mg/(Mg + Fe2+)"]))

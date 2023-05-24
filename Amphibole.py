@@ -2,6 +2,7 @@
 # V 0.0.1
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 ########################################################################################################################
@@ -310,31 +311,31 @@ class Amphibole:
         final_formulaes['(Ca+Na)(B)'] = temp_df['(Ca+Na)(B)']
         final_formulaes['Mg/(Mg + Fe2+)'] = temp_df['Mg/(Mg + Fe2+)']
         final_formulaes['Fe3+/(Fe3+ + Al_vi)'] = temp_df['Fe3+/(Fe3+ + Al_vi)']
-    
+
+        self.epma_normalized = final_formulaes
         return final_formulaes
 
-    # def leake1997(x, y):
-    #     """
-    #     :param x: Si nomalized
-    #     :param y: Mg/(Mg + Fe2+) Ratio
-    #     :return: Leake (1997) Diagram for (Na+K)(A) > 0.5 apfu
-    #     """
-    #     plt.subplots(figsize=(8, 6))
-    #     plt.xlim(7.5, 4.5)
-    #     plt.ylim(0, 1)
-    #     plt.plot([4.5, 7.5, 0, 1], [0.5, 0.5, 0.5, 0.5], color='black', zorder=1, linewidth=0.5)
-    #     plt.plot([6.5, 6.5, 6.5, 6.5], [6.5, 6.5, 0, 1], color='black', zorder=1, linewidth=0.5)
-    #     plt.plot([5.5, 5.5, 5.5, 5.5], [5.5, 5.5, 0, 1], color='black', zorder=1, linewidth=0.5)
-    #     plt.scatter(x, y, s=100, color='green', edgecolors='black', zorder=2)
-    #     plt.ylabel("$\mathrm{Mg/}\mathrm{(Mg}+\mathrm{Fe}^{2})$", fontsize=16)
-    #     plt.xlabel('Si', fontsize=16)
-    #     plt.text(7.15, 0.75, 'Edenite')
-    #     plt.text(7.20, 0.25, 'Fe-edenite')
-    #     plt.text(6.2, 0.75, 'Pargasite')
-    #     plt.text(6.35, 0.25, 'Mg-hastingsite')
-    #     plt.text(5.35, 0.75, 'Mg-sadanagaite')
-    #     plt.text(5.35, 0.25, 'Fe-Tschermakite')
-    #     plt.show()
+    def leake1997(self):
+        """
+        :return: Leake (1997) Diagram for (Na+K)(A) > 0.5 apfu
+        """
+        plt.subplots(figsize=(8, 6))
+        plt.xlim(7.5, 4.5)
+        plt.ylim(0, 1)
+        plt.plot([4.5, 7.5, 0, 1], [0.5, 0.5, 0.5, 0.5], color='black', zorder=0, linewidth=0.5)
+        plt.plot([6.5, 6.5, 6.5, 6.5], [6.5, 6.5, 0, 1], color='black', zorder=0, linewidth=0.5)
+        plt.plot([5.5, 5.5, 5.5, 5.5], [5.5, 5.5, 0, 1], color='black', zorder=0, linewidth=0.5)
+        sns.scatterplot(x=self.epma_normalized["Si"], y=self.epma_normalized["Mg/(Mg + Fe2+)"],
+                        hue=self.epma_dataframe["Sample"], s=100)
+        plt.ylabel("$\mathrm{Mg/}\mathrm{(Mg}+\mathrm{Fe}^{2})$", fontsize=16)
+        plt.xlabel('Si', fontsize=16)
+        plt.text(7.15, 0.75, 'Edenite')
+        plt.text(7.20, 0.25, 'Fe-edenite')
+        plt.text(6.2, 0.75, 'Pargasite')
+        plt.text(6.35, 0.25, 'Mg-hastingsite')
+        plt.text(5.35, 0.75, 'Mg-sadanagaite')
+        plt.text(5.35, 0.25, 'Fe-Tschermakite')
+        plt.show()
 
 
 ########################################################################################################################
@@ -342,12 +343,14 @@ class Amphibole:
 ########################################################################################################################
 
 
-df = pd.read_csv("example_table.csv")
+df = pd.read_csv("liliana_amp.csv")
 pd.set_option('display.max_columns', None)
 df['Fe2O3'] = 0
 
+print(df.head())
+
 meu_anfibolios = Amphibole(df)
 # print(meu_anfibolios.epma_dataframe)
-print(meu_anfibolios.normalization())
-# print(normalized_dataset.head(20))
-# print(leake1997(normalized_dataset["Si"], normalized_dataset["Mg/(Mg + Fe2+)"]))
+meu_anfibolios.normalization()
+meu_anfibolios.leake1997()
+

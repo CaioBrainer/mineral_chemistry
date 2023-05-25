@@ -1,8 +1,8 @@
 # Projeto de programa para cálculo e projeção de química mineral
 # V 0.0.1
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import matplotlib.pyplot as plt
+# from seaborn import scatterplot
 
 
 ########################################################################################################################
@@ -14,8 +14,7 @@ class Amphibole:
         self.epma_dataframe = dataframe
         self.temp_table = pd.DataFrame()
         self.epma_normalized = pd.DataFrame()
-        
-    pass
+        self.temperatures = pd.DataFrame()
     
     def normalization(self):   
         anion_proportions = pd.DataFrame()
@@ -185,7 +184,7 @@ class Amphibole:
         # formulae_s13, formulae_s15 = final_formulaes(recheck13, recheck15)
     
         final_formulaes = formulae_s13.copy()
-    
+
         for index, value in enumerate(formulae_s13):
             if (formulae_s13['Ca'].loc[index] + formulae_s13['Na'].loc[index]) < 1.34:
                 final_formulaes.loc[index] = formulae_s15.loc[index]
@@ -313,7 +312,18 @@ class Amphibole:
         final_formulaes['Fe3+/(Fe3+ + Al_vi)'] = temp_df['Fe3+/(Fe3+ + Al_vi)']
 
         self.epma_normalized = final_formulaes
-        return final_formulaes
+
+    def temperatures_calculation(self):
+        temperatures = pd.DataFrame()
+        # Putirka 2016 (he uses 8 cation normalized!!!!)
+        # Si in Hornblend
+        temperatures["Putirka(Si_Hbl)"] = 2061 - (178.4 * self.epma_normalized["Si"])
+
+        temperatures["Putirka(Eq_5)"] = 1781 - (132.74 * self.epma_normalized["Si"]) + \
+                                             (116.6 * self.epma_normalized["Ti"]) - \
+                                             (69.41 * (self.epma_normalized["Fe2+"] + self.epma_normalized["Fe3+"])) + \
+                                        (101.62 * self.epma_normalized["Na"])
+        self.temperatures = temperatures
 
     def leake1997(self):
         """
@@ -325,7 +335,7 @@ class Amphibole:
         plt.plot([4.5, 7.5, 0, 1], [0.5, 0.5, 0.5, 0.5], color='black', zorder=0, linewidth=0.5)
         plt.plot([6.5, 6.5, 6.5, 6.5], [6.5, 6.5, 0, 1], color='black', zorder=0, linewidth=0.5)
         plt.plot([5.5, 5.5, 5.5, 5.5], [5.5, 5.5, 0, 1], color='black', zorder=0, linewidth=0.5)
-        sns.scatterplot(x=self.epma_normalized["Si"], y=self.epma_normalized["Mg/(Mg + Fe2+)"],
+        scatterplot(x=self.epma_normalized["Si"], y=self.epma_normalized["Mg/(Mg + Fe2+)"],
                         hue=self.epma_dataframe["Sample"], s=100)
         plt.ylabel("$\mathrm{Mg/}\mathrm{(Mg}+\mathrm{Fe}^{2})$", fontsize=16)
         plt.xlabel('Si', fontsize=16)
@@ -347,10 +357,11 @@ df = pd.read_csv("liliana_amp.csv")
 pd.set_option('display.max_columns', None)
 df['Fe2O3'] = 0
 
-print(df.head())
-
-meu_anfibolios = Amphibole(df)
-# print(meu_anfibolios.epma_dataframe)
-meu_anfibolios.normalization()
-meu_anfibolios.leake1997()
+meus_anfibolios = Amphibole(df)
+meus_anfibolios.normalization()
+print(meus_anfibolios.epma_dataframe)
+print(meus_anfibolios.epma_normalized)
+# meus_anfibolios.temperatures_calculation()
+# print(meus_anfibolios.temperatures)
+# meu_anfibolios.leake1997()
 
